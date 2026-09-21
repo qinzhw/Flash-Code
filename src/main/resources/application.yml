@@ -2,7 +2,7 @@ spring:
   application:
     name: flash-code
 server:
-  port: 8123
+  port: 8124
   servlet:
     context-path: /api
 # springdoc-openapi
