@@ -45,8 +45,8 @@ public class UserController {
      * @param userRegisterRequest 用户注册请求
      * @return 返回结果
      */
-    @PostMapping("regitster")
-    public BaseResponse<Long> regitster(@RequestBody UserRegisterRequest userRegisterRequest) {
+    @PostMapping("/register")
+    public BaseResponse<Long> register(@RequestBody UserRegisterRequest userRegisterRequest) {
         // 校验参数
         ThrowUtils.throwIf(userRegisterRequest == null, ErrorCode.PARAMS_ERROR);
 

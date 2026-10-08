@@ -1,9 +1,9 @@
 # 数据库初始化
 -- 创建库
-create database if not exists yu_ai_code_mother;
+create database if not exists flash_code;
 
 -- 切换库
-use yu_ai_code_mother;
+use flash_code;
 
 -- 用户表
 create table if not exists user

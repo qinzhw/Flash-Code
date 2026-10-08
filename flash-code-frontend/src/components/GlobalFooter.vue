@@ -8,7 +8,8 @@
           rel="noopener noreferrer"
           class="author-link"
         >
-          GitHub by qinzhw
+          GitHub by qinzhw（qinzhiwei200ok@163.com）
+          欢迎一起交流学习！
         </a>
       </p>
     </div>

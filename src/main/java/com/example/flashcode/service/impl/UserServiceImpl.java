@@ -93,20 +93,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         if (userPassword.length() < 8) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
         }
-        // 2. 加密
-        String encryptPassword = Argon2Util.encode(userPassword);
-        // 校验密码是否正确
-        if (!Argon2Util.matches(userPassword, encryptPassword)) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
-        }
-        // 3. 查询用户是否存在
+        // 2. 根据账号查询用户
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.eq("userAccount", userAccount);
-        queryWrapper.eq("userPassword", encryptPassword);
         User user = this.mapper.selectOneByQuery(queryWrapper);
-
-        // 4. 用户不存在
+        // 3. 用户不存在
         if (user == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
+        }
+        // 4. 校验密码：用数据库中存储的 hash 验证明文密码
+        if (!Argon2Util.matches(userPassword, user.getUserPassword())) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在或密码错误");
         }
         // 5. 记录用户的登录态
