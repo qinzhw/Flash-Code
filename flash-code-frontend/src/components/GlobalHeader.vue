@@ -31,6 +31,10 @@
                 </a-space>
                 <template #overlay>
                   <a-menu>
+                    <a-menu-item @click="goEditUser">
+                      <UserOutlined />
+                      个人中心
+                    </a-menu-item>
                     <a-menu-item @click="doLogout">
                       <LogoutOutlined />
                       退出登录
@@ -51,10 +55,10 @@
 </template>
 
 <script setup lang="ts">
-import { h, ref } from 'vue'
+import { computed, h, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { type MenuProps, message } from 'ant-design-vue'
-import { LogoutOutlined } from '@ant-design/icons-vue'
+import { LogoutOutlined, UserOutlined } from '@ant-design/icons-vue'
 
 // JS 中引入 Store
 import { useLoginUserStore } from '@/stores/loginUser.ts'
@@ -70,11 +74,16 @@ router.afterEach((to, from, next) => {
 })
 
 // 菜单配置项
-const menuItems = ref([
+const originItems = [
   {
     key: '/',
-    label: '首页',
-    title: '首页',
+    label: '主页',
+    title: '主页',
+  },
+  {
+    key: '/admin/userManage',
+    label: '用户管理',
+    title: '用户管理',
   },
   {
     key: 'others',
@@ -85,7 +94,24 @@ const menuItems = ref([
     ),
     title: 'GitHub源码仓库',
   },
-])
+]
+
+// 过滤菜单项
+const filterMenus = (menus = [] as MenuProps['items']) => {
+  return menus?.filter((menu) => {
+    const menuKey = menu?.key as string
+    if (menuKey?.startsWith('/admin')) {
+      const loginUser = loginUserStore.loginUser
+      if (!loginUser || loginUser.userRole !== 'admin') {
+        return false
+      }
+    }
+    return true
+  })
+}
+
+// 展示在菜单的路由数组
+const menuItems = computed<MenuProps['items']>(() => filterMenus(originItems))
 
 // 处理菜单点击
 const handleMenuClick: MenuProps['onClick'] = (e) => {
@@ -109,6 +135,11 @@ const doLogout = async () => {
   } else {
     message.error('退出登录失败，' + res.data.message)
   }
+}
+
+// 进入个人中心
+const goEditUser = () => {
+  router.push('/user/edit')
 }
 </script>
 

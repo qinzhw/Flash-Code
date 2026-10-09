@@ -122,3 +122,18 @@ export async function updateUser(body: API.UserUpdateRequest, options?: { [key: 
     ...(options || {}),
   })
 }
+
+/** 当前用户更新自己的个人信息 POST /user/update/my */
+export async function userUpdateMy(
+  body: API.UserEditRequest,
+  options?: { [key: string]: any },
+) {
+  return request<API.BaseResponseBoolean>('/user/update/my', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  })
+}

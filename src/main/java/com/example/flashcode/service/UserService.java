@@ -1,5 +1,6 @@
 package com.example.flashcode.service;
 
+import com.example.flashcode.model.dto.UserEditRequest;
 import com.example.flashcode.model.dto.UserQueryRequest;
 import com.example.flashcode.model.vo.LoginUserVO;
 import com.example.flashcode.model.vo.UserVO;
@@ -58,6 +59,15 @@ public interface UserService extends IService<User> {
      * @return 是否注销成功
      */
     boolean userLogout(HttpServletRequest request);
+
+    /**
+     * 当前用户更新自己的个人信息（仅允许更新昵称、头像、简介）
+     *
+     * @param userEditRequest 编辑请求
+     * @param request          请求
+     * @return 是否更新成功
+     */
+    boolean userEditMy(UserEditRequest userEditRequest, HttpServletRequest request);
 
     /**
      * 获取脱敏后的用户信息(分页)

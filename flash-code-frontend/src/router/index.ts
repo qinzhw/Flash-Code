@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '@/pages/HomePage.vue'
 import UserLoginPage from '@/pages/user/UserLoginPage.vue'
 import UserRegisterPage from '@/pages/user/UserRegisterPage.vue'
+import UserEditPage from '@/pages/user/UserEditPage.vue'
 import UserManagePage from '@/pages/admin/UserManagePage.vue'
 
 const router = createRouter({
@@ -21,6 +22,11 @@ const router = createRouter({
       path: '/user/register',
       name: '用户注册',
       component: UserRegisterPage,
+    },
+    {
+      path: '/user/edit',
+      name: '个人中心',
+      component: UserEditPage,
     },
     {
       path: '/admin/userManage',

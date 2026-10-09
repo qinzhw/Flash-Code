@@ -186,6 +186,21 @@ public class UserController {
     }
 
     /**
+     * 当前用户更新自己的个人信息（仅可更新昵称、头像、简介，无管理员权限要求）
+     *
+     * @param userEditRequest 编辑请求
+     * @param request         请求
+     * @return 更新结果
+     */
+    @PostMapping("/update/my")
+    public BaseResponse<Boolean> updateMyUser(@RequestBody UserEditRequest userEditRequest,
+                                              HttpServletRequest request) {
+        ThrowUtils.throwIf(userEditRequest == null, ErrorCode.PARAMS_ERROR);
+        boolean result = userService.userEditMy(userEditRequest, request);
+        return ResultUtils.success(result);
+    }
+
+    /**
      * 分页获取用户封装列表（仅管理员）
      *
      * @param userQueryRequest 查询请求参数

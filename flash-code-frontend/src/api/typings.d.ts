@@ -126,6 +126,12 @@ declare namespace API {
     userRole?: string
   }
 
+  type UserEditRequest = {
+    userName?: string
+    userAvatar?: string
+    userProfile?: string
+  }
+
   type UserVO = {
     id?: number
     userAccount?: string

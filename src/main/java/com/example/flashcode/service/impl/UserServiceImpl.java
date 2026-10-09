@@ -5,6 +5,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.example.flashcode.exception.BusinessException;
 import com.example.flashcode.exception.ErrorCode;
+import com.example.flashcode.model.dto.UserEditRequest;
 import com.example.flashcode.model.dto.UserQueryRequest;
 import com.example.flashcode.model.enums.UserRoleEnum;
 import com.example.flashcode.model.vo.LoginUserVO;
@@ -138,6 +139,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>  implements U
         // 移除登录态
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return true;
+    }
+
+    @Override
+    public boolean userEditMy(UserEditRequest userEditRequest, HttpServletRequest request) {
+        if (userEditRequest == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        // 获取当前登录用户
+        User loginUser = this.getLoginUser(request);
+        // 只更新允许修改的字段，避免越权修改账号、密码、角色
+        User user = new User();
+        user.setId(loginUser.getId());
+        user.setUserName(userEditRequest.getUserName());
+        user.setUserAvatar(userEditRequest.getUserAvatar());
+        user.setUserProfile(userEditRequest.getUserProfile());
+        boolean result = this.updateById(user);
+        if (result) {
+            // 同步更新 session 中的登录态
+            User updated = this.getById(loginUser.getId());
+            request.getSession().setAttribute(USER_LOGIN_STATE, updated);
+        }
+        return result;
     }
 
     @Override
