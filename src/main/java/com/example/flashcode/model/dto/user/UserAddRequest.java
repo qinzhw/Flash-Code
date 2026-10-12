@@ -1,4 +1,4 @@
-package com.example.flashcode.model.dto;
+package com.example.flashcode.model.dto.user;
 
 import lombok.Data;
 

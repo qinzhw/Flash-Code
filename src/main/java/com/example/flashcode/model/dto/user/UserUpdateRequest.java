@@ -1,15 +1,19 @@
-package com.example.flashcode.model.dto;
+package com.example.flashcode.model.dto.user;
 
 import lombok.Data;
 
 import java.io.Serializable;
 
 /**
- * 用户编辑自己的信息请求参数
- * 仅允许更新昵称、头像、简介，不能改账号、密码、角色
+ * 用户更新请求参数
  */
 @Data
-public class UserEditRequest implements Serializable {
+public class UserUpdateRequest implements Serializable {
+
+    /**
+     * id
+     */
+    private Long id;
 
     /**
      * 用户昵称
@@ -25,6 +29,11 @@ public class UserEditRequest implements Serializable {
      * 简介
      */
     private String userProfile;
+
+    /**
+     * 用户角色：user/admin
+     */
+    private String userRole;
 
     private static final long serialVersionUID = 1L;
 }

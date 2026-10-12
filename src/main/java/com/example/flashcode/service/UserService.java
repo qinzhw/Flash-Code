@@ -1,7 +1,7 @@
 package com.example.flashcode.service;
 
-import com.example.flashcode.model.dto.UserEditRequest;
-import com.example.flashcode.model.dto.UserQueryRequest;
+import com.example.flashcode.model.dto.user.UserEditRequest;
+import com.example.flashcode.model.dto.user.UserQueryRequest;
 import com.example.flashcode.model.vo.LoginUserVO;
 import com.example.flashcode.model.vo.UserVO;
 import com.mybatisflex.core.query.QueryWrapper;
