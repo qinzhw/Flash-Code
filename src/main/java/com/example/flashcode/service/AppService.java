@@ -1,10 +1,12 @@
 package com.example.flashcode.service;
 
 import com.example.flashcode.model.dto.app.AppQueryRequest;
+import com.example.flashcode.model.entity.User;
 import com.example.flashcode.model.vo.AppVO;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.service.IService;
 import com.example.flashcode.model.entity.App;
+import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -13,6 +15,25 @@ import java.util.List;
  *
  */
 public interface AppService extends IService<App> {
+
+    /**
+     * 通过对话生成应用代码
+     *
+     * @param appId 应用id
+     * @param Message 用户消息
+     * @param user 用户实体
+     * @return 代码流
+     */
+    Flux<String> chatToGenCode(Long appId, String Message, User user);
+
+    /**
+     * 应用部署
+     *
+     * @param appId 应用id
+     * @param user 用户实体
+     * @return 可访问的部署地址
+     */
+    String deployApp(Long appId, User user);
 
     /**
      * 获取应用VO封装类，用于前端展示
