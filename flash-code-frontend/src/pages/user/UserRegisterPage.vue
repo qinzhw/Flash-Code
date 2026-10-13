@@ -1,7 +1,7 @@
 <template>
-  <div id="userRegisterPage">
-    <h2 class="title">Flash Code AI 零代码工作台 用户注册</h2>
-    <div class="desc">不写任何代码，即可生成应用</div>
+  <div id="userRegisterPage" class="page-container">
+    <h2 class="page-title">Flash Code AI 零代码工作台 用户注册</h2>
+    <div class="page-desc">不写任何代码，即可生成应用</div>
     <a-form :model="formState" name="basic" autocomplete="off" @finish="handleSubmit">
       <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入账号' }]">
         <a-input v-model:value="formState.userAccount" placeholder="请输入账号" />
@@ -25,7 +25,7 @@
       >
         <a-input-password v-model:value="formState.checkPassword" placeholder="请确认密码" />
       </a-form-item>
-      <div class="tips">
+      <div class="page-tips">
         已有账号？
         <RouterLink to="/user/login">去登录</RouterLink>
       </div>
@@ -38,7 +38,7 @@
 
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { userRegister } from '@/api/userController.ts'
+import { register } from '@/api/userController.ts'
 import { message } from 'ant-design-vue'
 import { reactive } from 'vue'
 
@@ -69,7 +69,7 @@ const validateCheckPassword = (rule: unknown, value: string, callback: (error?: 
  * @param values
  */
 const handleSubmit = async (values: API.UserRegisterRequest) => {
-  const res = await userRegister(values)
+  const res = await register(values)
   // 注册成功，跳转到登录页面
   if (res.data.code === 0) {
     message.success('注册成功')
@@ -86,24 +86,5 @@ const handleSubmit = async (values: API.UserRegisterRequest) => {
 <style scoped>
 #userRegisterPage {
   max-width: 360px;
-  margin: 0 auto;
-}
-
-.title {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.desc {
-  text-align: center;
-  color: #bbb;
-  margin-bottom: 16px;
-}
-
-.tips {
-  margin-bottom: 16px;
-  color: #bbb;
-  font-size: 13px;
-  text-align: right;
 }
 </style>

@@ -31,3 +31,39 @@ body {
 a {
   text-decoration: none;
 }
+
+/*
+ * 表单类页面（登录 / 注册 / 个人中心 / 应用信息修改）的公共样式
+ * 这些页面结构一致：居中标题 + 可选说明 + 表单 + 居中按钮组
+ */
+
+/* 页面容器：居中并限制宽度，宽度由各页面按需覆盖 */
+.page-container {
+  margin: 0 auto;
+}
+
+/* 页面标题 */
+.page-title {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* 页面说明文字 */
+.page-desc {
+  margin-bottom: 16px;
+  color: #888;
+  text-align: center;
+}
+
+/* 表单右下角的辅助提示 */
+.page-tips {
+  margin-bottom: 16px;
+  color: #888;
+  font-size: 13px;
+  text-align: right;
+}
+
+/* 表单底部居中的按钮组 */
+.form-actions-center .ant-form-item-control-input {
+  text-align: center;
+}

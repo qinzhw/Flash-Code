@@ -4,7 +4,14 @@
     <GlobalHeader />
 
     <!-- 主要内容区域 -->
-    <a-layout-content class="main-content">
+    <a-layout-content
+      class="main-content"
+      :class="{
+        'main-content-wide': isWidePage,
+        'main-content-fluid': isFluidPage,
+        'main-content-full': isFullWidthPage,
+      }"
+    >
       <router-view />
     </a-layout-content>
 
@@ -14,8 +21,21 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import GlobalHeader from '@/components/GlobalHeader.vue'
 import GlobalFooter from '@/components/GlobalFooter.vue'
+
+const route = useRoute()
+
+// 应用生成对话页需要更宽的展示区域，并撑满剩余高度
+const isWidePage = computed(() => route.path.startsWith('/app/chat'))
+
+// 管理页（用户管理 / 应用管理）表格内容较多，宽度铺满 100%
+const isFluidPage = computed(() => route.path.startsWith('/admin'))
+
+// 主页由页面自己绘制 100% 宽度的渐变背景，外层容器不再限制宽度和内边距
+const isFullWidthPage = computed(() => route.path === '/')
 </script>
 
 <style scoped>
@@ -30,6 +50,32 @@ import GlobalFooter from '@/components/GlobalFooter.vue'
   max-width: 1200px;
   padding: 24px;
   background: white;
+  border-radius: 8px;
   margin: 16px auto 24px;
+}
+
+/* 管理页：宽度铺满，去掉左右留白 */
+.main-content-fluid {
+  max-width: none;
+  margin: 16px 0 24px;
+  border-radius: 0;
+}
+
+.main-content-wide {
+  display: flex;
+  flex-direction: column;
+  max-width: 1600px;
+  margin: 8px auto 12px;
+  padding: 8px 16px;
+}
+
+.main-content-full {
+  display: flex;
+  flex-direction: column;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
 }
 </style>

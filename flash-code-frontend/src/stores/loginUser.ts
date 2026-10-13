@@ -19,10 +19,9 @@ export const useLoginUserStore = defineStore('loginUser', () => {
     }
   }
   // 更新登录用户信息
-  function setLoginUser(newLoginUser: any) {
+  function setLoginUser(newLoginUser: API.LoginUserVO) {
     loginUser.value = newLoginUser
   }
 
   return { loginUser, setLoginUser, fetchLoginUser }
 })
-

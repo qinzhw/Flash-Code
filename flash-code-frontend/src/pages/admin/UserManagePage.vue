@@ -1,5 +1,7 @@
 <template>
   <div id="userManagePage">
+    <h2 class="admin-title">用户管理</h2>
+
     <!-- 搜索表单 -->
     <a-form layout="inline" :model="searchParams" @finish="doSearch">
       <a-form-item label="账号">
@@ -102,11 +104,12 @@
 </template>
 <script lang="ts" setup>
 import { CheckOutlined, EditOutlined } from '@ant-design/icons-vue'
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import type { UnwrapRef } from 'vue'
 import { deleteUser, listUserVoByPage, updateUser } from '@/api/userController.ts'
 import { message } from 'ant-design-vue'
 import dayjs from 'dayjs'
+import { usePagedTable } from '@/composables/usePagedTable.ts'
 
 const columns = [
   {
@@ -145,7 +148,6 @@ const columns = [
 
 // 数据
 const data = ref<API.UserVO[]>([])
-const total = ref(0)
 
 // 正在编辑的行数据（key 为用户 id）
 const editableData: UnwrapRef<Record<string, API.UserVO>> = reactive({})
@@ -169,30 +171,13 @@ const fetchData = async () => {
   }
 }
 
-// 分页参数
-const pagination = computed(() => {
-  return {
-    current: searchParams.pageNum ?? 1,
-    pageSize: searchParams.pageSize ?? 10,
-    total: total.value,
-    showSizeChanger: true,
-    showTotal: (total: number) => `共 ${total} 条`,
-  }
-})
-
-// 表格变化处理
-const doTableChange = (page: any) => {
-  searchParams.pageNum = page.current
-  searchParams.pageSize = page.pageSize
-  fetchData()
-}
-
-// 获取数据
-const doSearch = () => {
-  // 重置页码
-  searchParams.pageNum = 1
-  fetchData()
-}
+// 分页查询通用逻辑：总条数、分页配置、翻页与搜索
+const {
+  total,
+  pagination,
+  handleTableChange: doTableChange,
+  search: doSearch,
+} = usePagedTable(searchParams, fetchData)
 
 // 进入编辑状态：拷贝一份当前行数据
 const edit = (id: number) => {
@@ -213,10 +198,7 @@ const save = async (id: number) => {
     userRole: editing.userRole,
   })
   if (res.data.code === 0) {
-    Object.assign(
-      data.value.filter((item) => item.id === id)[0],
-      editing,
-    )
+    Object.assign(data.value.filter((item) => item.id === id)[0], editing)
     delete editableData[id]
     message.success('更新成功')
   } else {
@@ -248,6 +230,13 @@ onMounted(() => {
 <style scoped>
 #userManagePage {
   width: 100%;
+}
+
+.admin-title {
+  margin: 0 0 16px;
+  font-size: 18px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.88);
 }
 
 .editable-cell {

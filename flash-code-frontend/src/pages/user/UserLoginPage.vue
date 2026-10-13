@@ -1,7 +1,7 @@
 <template>
-  <div id="userLoginPage">
-    <h2 class="title">Flash Code AI 零代码工作台 用户登录</h2>
-    <div class="desc">不写任何代码，即可生成应用</div>
+  <div id="userLoginPage" class="page-container">
+    <h2 class="page-title">Flash Code AI 零代码工作台 用户登录</h2>
+    <div class="page-desc">不写任何代码，即可生成应用</div>
     <a-form :model="formState" name="basic" autocomplete="off" @finish="handleSubmit">
       <a-form-item name="userAccount" :rules="[{ required: true, message: '请输入您的账号！' }]">
         <a-input v-model:value="formState.userAccount" placeholder="请输入账号" />
@@ -17,7 +17,7 @@
         <a-input-password v-model:value="formState.userPassword" placeholder="请输入密码" />
       </a-form-item>
 
-      <div class="tips">
+      <div class="page-tips">
         没有账号？
         <RouterLink to="/user/register">去注册</RouterLink>
       </div>
@@ -47,7 +47,7 @@ const loginUserStore = useLoginUserStore()
  * 提交表单
  * @param values
  */
-const handleSubmit = async (values: any) => {
+const handleSubmit = async (values: API.UserLoginRequest) => {
   const res = await userLogin(values)
   // 登录成功，把登录态保存到全局状态中
   if (res.data.code === 0 && res.data.data) {
@@ -65,24 +65,5 @@ const handleSubmit = async (values: any) => {
 <style>
 #userLoginPage {
   max-width: 460px;
-  margin: 0 auto;
-}
-
-.title {
-  text-align: center;
-  margin-bottom: 16px;
-}
-
-.desc {
-  text-align: center;
-  color: #888;
-  margin-bottom: 16px;
-}
-
-.tips {
-  margin-bottom: 16px;
-  color: #888;
-  font-size: 13px;
-  text-align: right;
 }
 </style>

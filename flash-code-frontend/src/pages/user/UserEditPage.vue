@@ -1,6 +1,6 @@
 <template>
-  <div id="userEditPage">
-    <h2 class="title">个人中心</h2>
+  <div id="userEditPage" class="page-container">
+    <h2 class="page-title">个人中心</h2>
     <a-form
       :model="formState"
       name="userEdit"
@@ -34,7 +34,7 @@
           :auto-size="{ minRows: 3, maxRows: 6 }"
         />
       </a-form-item>
-      <a-form-item :wrapper-col="{ span: 24, offset: 0 }" class="center-actions">
+      <a-form-item :wrapper-col="{ span: 24, offset: 0 }" class="form-actions-center">
         <a-space>
           <a-button type="primary" html-type="submit" :loading="submitting">保存</a-button>
           <a-button @click="goBack">返回</a-button>
@@ -49,7 +49,7 @@ import { reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { message } from 'ant-design-vue'
 import { useLoginUserStore } from '@/stores/loginUser.ts'
-import { userUpdateMy } from '@/api/userController.ts'
+import { updateMyUser } from '@/api/userController.ts'
 
 const router = useRouter()
 const loginUserStore = useLoginUserStore()
@@ -76,7 +76,7 @@ const initForm = () => {
 const handleSubmit = async () => {
   submitting.value = true
   try {
-    const res = await userUpdateMy({
+    const res = await updateMyUser({
       userName: formState.userName,
       userAvatar: formState.userAvatar,
       userProfile: formState.userProfile,
@@ -118,15 +118,5 @@ onMounted(() => {
 <style scoped>
 #userEditPage {
   max-width: 600px;
-  margin: 0 auto;
-}
-
-.title {
-  text-align: center;
-  margin-bottom: 24px;
-}
-
-.center-actions :deep(.ant-form-item-control-input) {
-  text-align: center;
 }
 </style>
