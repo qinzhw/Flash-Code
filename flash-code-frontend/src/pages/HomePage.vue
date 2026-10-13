@@ -222,8 +222,8 @@ const doCreateApp = async () => {
     const res = await addApp({ initPrompt: prompt })
     if (res.data.code === 0 && res.data.data != null) {
       message.success('创建成功，正在为你生成应用')
-      // autoGen=1 表示需要在对话页自动把初始提示词发送给 AI
-      await router.push(`/app/chat/${res.data.data}?autoGen=1`)
+      // 对话页会在「本人的应用且没有对话历史」时自动发送初始提示词
+      await router.push(`/app/chat/${res.data.data}`)
     } else {
       message.error('创建失败，' + res.data.message)
     }
@@ -255,12 +255,12 @@ const openDetail = (app: API.AppVO) => {
   detailVisible.value = true
 }
 
-// 查看对话：跳转到应用生成对话页（view=1 表示只是查看，不自动发送消息）
+// 查看对话：跳转到应用生成对话页（是否有历史由对话页自行判断）
 const goChatPage = (app: API.AppVO) => {
   if (app.id == null) {
     return
   }
-  router.push(`/app/chat/${app.id}?view=1`)
+  router.push(`/app/chat/${app.id}`)
 }
 
 // 查看作品：新页面打开部署地址（仅已部署的应用会有该入口）

@@ -1,5 +1,12 @@
 <template>
   <div ref="listRef" class="message-list">
+    <!-- 更早的历史消息 -->
+    <div v-if="hasMore" class="message-load-more">
+      <a-button type="link" size="small" :loading="loadingMore" @click="handleLoadMore">
+        加载更多
+      </a-button>
+    </div>
+
     <a-empty v-if="messages.length === 0" description="和 AI 说点什么，开始生成你的应用吧" />
     <div
       v-for="item in messages"
@@ -28,7 +35,7 @@
 </template>
 
 <script setup lang="ts">
-import { nextTick, ref } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import defaultAiAvatar from '@/assets/logo.png'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 import type { ChatMessage } from '@/types/chat.ts'
@@ -38,6 +45,10 @@ interface Props {
   messages: ChatMessage[]
   /** AI 是否正在流式输出（用于限制 Markdown 重渲染频率） */
   streaming?: boolean
+  /** 是否还有更早的历史消息 */
+  hasMore?: boolean
+  /** 是否正在加载更早的历史消息 */
+  loadingMore?: boolean
   /** AI 头像 */
   aiAvatar?: string
   /** 当前登录用户昵称，用于生成头像占位文字 */
@@ -46,10 +57,17 @@ interface Props {
   userAvatar?: string
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   streaming: false,
+  hasMore: false,
+  loadingMore: false,
   aiAvatar: defaultAiAvatar,
 })
+
+const emit = defineEmits<{
+  /** 加载更早的历史消息 */
+  (e: 'load-more'): void
+}>()
 
 const listRef = ref<HTMLElement>()
 
@@ -62,6 +80,33 @@ const scrollToBottom = async () => {
   }
 }
 
+// 加载更早消息前后的高度与滚动位置，用于保持视觉位置不跳动
+let prevScrollHeight = 0
+let prevScrollTop = 0
+
+const handleLoadMore = () => {
+  const el = listRef.value
+  prevScrollHeight = el?.scrollHeight ?? 0
+  prevScrollTop = el?.scrollTop ?? 0
+  emit('load-more')
+}
+
+// 旧消息插入到顶部后，把滚动位置补偿回原来的位置
+watch(
+  () => props.loadingMore,
+  async (loading, wasLoading) => {
+    if (!wasLoading || loading) {
+      return
+    }
+    await nextTick()
+    const el = listRef.value
+    if (el && prevScrollHeight) {
+      el.scrollTop = prevScrollTop + (el.scrollHeight - prevScrollHeight)
+      prevScrollHeight = 0
+    }
+  },
+)
+
 defineExpose({ scrollToBottom })
 </script>
 
@@ -71,6 +116,13 @@ defineExpose({ scrollToBottom })
   min-height: 0;
   overflow-y: auto;
   padding: 12px;
+}
+
+/* 加载更多历史消息 */
+.message-load-more {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
 }
 
 .message-item {

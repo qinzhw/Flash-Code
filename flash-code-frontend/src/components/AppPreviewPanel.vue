@@ -68,6 +68,8 @@ defineExpose({ refresh })
 .preview-panel {
   flex: 3 1 0;
   min-width: 0;
+  /* 允许压缩到容器高度内，由内部 iframe 区域滚动 */
+  min-height: 0;
   display: flex;
   flex-direction: column;
   border: 1px solid #f0f0f0;

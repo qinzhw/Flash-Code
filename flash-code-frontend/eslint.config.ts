@@ -14,7 +14,8 @@ export default defineConfigWithVueTs(
     files: ['**/*.{ts,mts,tsx,vue}'],
   },
 
-  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
+  // src/api 由 openapi2ts 依据后端接口自动生成，不参与代码风格检查
+  globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**', 'src/api/**']),
 
   pluginVue.configs['flat/essential'],
   vueTsConfigs.recommended,

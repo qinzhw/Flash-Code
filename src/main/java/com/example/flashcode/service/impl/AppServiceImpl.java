@@ -73,7 +73,7 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "不支持的代码生成类型");
         }
         // 5. 保存对话历史消息
-        chatHistoryService.addChatMessage(appId, message, ChatHistoryMessageTypeEnum.USER.name(), loginUser.getId());
+        chatHistoryService.addChatMessage(appId, message, ChatHistoryMessageTypeEnum.USER.getValue(), loginUser.getId());
 
         // 6. 调用 AI 生成代码(流式返回)
         Flux<String> codeFlux = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);

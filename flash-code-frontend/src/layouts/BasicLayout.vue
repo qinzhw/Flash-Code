@@ -1,5 +1,5 @@
 <template>
-  <a-layout class="basic-layout">
+  <a-layout class="basic-layout" :class="{ 'basic-layout-fixed': isWidePage }">
     <!-- 顶部导航栏 -->
     <GlobalHeader />
 
@@ -44,6 +44,16 @@ const isFullWidthPage = computed(() => route.path === '/')
   min-height: 100vh;
 }
 
+/*
+ * 对话页专用：外层给一个确定高度，整页锁在一屏内，
+ * 否则高度为 auto 时 flex-grow 不生效，页面会随消息内容一起变长
+ */
+.basic-layout-fixed {
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
 .main-content {
   flex: 1;
   width: 100%;
@@ -61,10 +71,13 @@ const isFullWidthPage = computed(() => route.path === '/')
   border-radius: 0;
 }
 
+/* 对话页：高度锁在一屏内，内部各区域自己滚动 */
 .main-content-wide {
   display: flex;
   flex-direction: column;
   max-width: 1600px;
+  min-height: 0;
+  overflow: hidden;
   margin: 8px auto 12px;
   padding: 8px 16px;
 }

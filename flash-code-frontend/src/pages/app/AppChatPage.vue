@@ -49,8 +49,11 @@
           ref="messageListRef"
           :messages="messages"
           :streaming="isGenerating"
+          :has-more="hasMore"
+          :loading-more="historyLoading"
           :user-name="loginUserStore.loginUser.userName"
           :user-avatar="loginUserStore.loginUser.userAvatar"
+          @load-more="loadMore"
         />
 
         <!-- 用户消息输入框：不是自己的作品时禁止对话 -->
@@ -128,6 +131,7 @@ import { fetchSSE } from '@/utils/sse.ts'
 import { asApiId } from '@/utils/id.ts'
 import { buildDeployUrl, buildPreviewUrl } from '@/utils/appUrl.ts'
 import { confirmDelete } from '@/utils/confirm.ts'
+import { useChatHistory } from '@/composables/useChatHistory.ts'
 import { CODE_GEN_TYPE } from '@/constants/codeGenType.ts'
 import { isGoodApp } from '@/constants/app.ts'
 import type { ChatMessage } from '@/types/chat.ts'
@@ -142,14 +146,20 @@ const loginUserStore = useLoginUserStore()
 // 应用 id（雪花 id 必须按字符串处理，避免精度丢失）
 const appId = String(route.params.appId ?? '')
 
-// 是否为「查看」入口（从应用卡片/详情进入），此时不自动发送消息
-const isViewMode = route.query.view === '1'
-
 // 应用信息
 const app = ref<API.AppVO>()
 
-// 对话消息
-const messages = ref<ChatMessage[]>([])
+// 对话消息（含游标分页的历史消息）
+const {
+  messages,
+  loading: historyLoading,
+  hasMore,
+  total: historyTotal,
+  loaded: historyLoaded,
+  loadLatest,
+  loadMore,
+  appendMessage,
+} = useChatHistory(appId)
 const messageListRef = ref<InstanceType<typeof ChatMessageList>>()
 const inputMessage = ref('')
 const isGenerating = ref(false)
@@ -247,7 +257,7 @@ const doGenerate = async (userMessage: string) => {
   }
   isGenerating.value = true
   const aiMessage = createMessage('ai', '')
-  messages.value.push(aiMessage)
+  appendMessage(aiMessage)
   await scrollToBottom()
 
   const currentController = new AbortController()
@@ -286,7 +296,14 @@ const doGenerate = async (userMessage: string) => {
   await scrollToBottom()
 }
 
-// 发送用户消息
+/** 发送一条用户消息并触发 AI 生成 */
+const sendMessage = async (content: string) => {
+  appendMessage(createMessage('user', content))
+  await scrollToBottom()
+  await doGenerate(content)
+}
+
+// 发送用户消息（输入框）
 const doSend = async () => {
   if (isGenerating.value) {
     message.warning('AI 正在生成中，请稍候')
@@ -301,10 +318,8 @@ const doSend = async () => {
     message.warning('请输入内容')
     return
   }
-  messages.value.push(createMessage('user', content))
   inputMessage.value = ''
-  await scrollToBottom()
-  await doGenerate(content)
+  await sendMessage(content)
 }
 
 // 停止生成
@@ -374,21 +389,18 @@ onMounted(async () => {
   if (app.value.deployKey) {
     deployedUrl.value = buildDeployUrl(app.value.deployKey)
   }
-  // 查看模式（从卡片「查看对话」/详情进入）：只展示已有内容，不发送任何消息
-  if (isViewMode) {
-    previewVisible.value = true
-    return
+
+  // 加载最近一页对话历史（该接口需要登录，且仅本人或管理员可查看）
+  if (loginUserStore.loginUser.id) {
+    await loadLatest()
   }
-  // 初始提示词作为第一条用户消息展示
-  if (app.value.initPrompt) {
-    messages.value.push(createMessage('user', app.value.initPrompt))
-  }
-  // 主页创建应用后跳转过来（autoGen=1），自动把初始提示词发送给 AI
-  if (route.query.autoGen === '1' && isOwner.value && app.value.initPrompt) {
-    await doGenerate(app.value.initPrompt)
-  } else {
-    // 已有应用直接展示之前生成的网站效果
-    previewVisible.value = true
+
+  // 网站展示：已经生成过（至少一轮对话，即 2 条消息），或读不到历史时按已有文件展示
+  previewVisible.value = !historyLoaded.value || historyTotal.value >= 2
+
+  // 自己的应用、且没有任何对话历史时，自动把初始提示词作为第一条消息发起对话
+  if (isOwner.value && historyLoaded.value && historyTotal.value === 0 && app.value.initPrompt) {
+    await sendMessage(app.value.initPrompt)
   }
 })
 </script>
@@ -396,7 +408,8 @@ onMounted(async () => {
 <style scoped>
 #appChatPage {
   flex: 1;
-  min-height: 520px;
+  /* 高度由外层撑满一屏，消息区与预览区各自内部滚动 */
+  min-height: 0;
   display: flex;
   flex-direction: column;
 }
@@ -444,6 +457,8 @@ onMounted(async () => {
   flex-direction: column;
   flex: 2 1 0;
   min-width: 320px;
+  /* 允许压缩到容器高度内，由内部消息列表滚动 */
+  min-height: 0;
   border: 1px solid #f0f0f0;
   border-radius: 12px;
   overflow: hidden;
