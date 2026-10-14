@@ -7,6 +7,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.example.flashcode.constant.AppConstant;
 import com.example.flashcode.core.AiCodeGeneratorFacade;
+import com.example.flashcode.core.handler.StreamHandlerExecutor;
 import com.example.flashcode.exception.BusinessException;
 import com.example.flashcode.exception.ErrorCode;
 import com.example.flashcode.exception.ThrowUtils;
@@ -54,6 +55,9 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
     @Resource
     private ChatHistoryService chatHistoryService;
 
+    @Resource
+    private StreamHandlerExecutor streamHandlerExecutor;
+
     @Override
     public Flux<String> chatToGenCode(Long appId, String message, User loginUser) {
         // 1. 参数校验
@@ -76,21 +80,9 @@ public class AppServiceImpl extends ServiceImpl<AppMapper, App>  implements AppS
         chatHistoryService.addChatMessage(appId, message, ChatHistoryMessageTypeEnum.USER.getValue(), loginUser.getId());
 
         // 6. 调用 AI 生成代码(流式返回)
-        Flux<String> codeFlux = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
+        Flux<String> codeStream = aiCodeGeneratorFacade.generateAndSaveCodeStream(message, codeGenTypeEnum, appId);
         //7. 收集 AI 响应的内容，并且在完成后保存记录到对话历史
-        StringBuffer aiResponseBuilder = new StringBuffer();
-        return codeFlux.map(chunk -> {
-            aiResponseBuilder.append(chunk);
-            return chunk;
-        }).doOnComplete(() -> {
-            // 流式返回完成后，保存 AI 消息到对话历史中
-            String aiResponse = aiResponseBuilder.toString();
-            chatHistoryService.addChatMessage(appId, aiResponse, ChatHistoryMessageTypeEnum.AI.getValue(), loginUser.getId());
-        }).doOnError(error -> {
-            // 即使 AI 生成代码失败，也保存 AI 消息到对话历史中
-            String errorMessage = "AI 生成代码失败：" + error.getMessage();
-            chatHistoryService.addChatMessage(appId, errorMessage, ChatHistoryMessageTypeEnum.AI.getValue(), loginUser.getId());
-        });
+        return streamHandlerExecutor.doExecute(codeStream, chatHistoryService, appId, loginUser, codeGenTypeEnum);
     }
 
     @Override
