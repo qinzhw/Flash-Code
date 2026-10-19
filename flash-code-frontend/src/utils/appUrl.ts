@@ -13,10 +13,15 @@ export const buildDeployUrl = (deployKey?: string): string => {
 
 /**
  * 生成后的预览地址：{预览域名}/{codeGenType}_{appId}/
+ *
+ * Vue 工程模式保存的是完整工程（根目录 index.html 是 Vite 开发入口，
+ * 里面的 /src/main.js 浏览器无法直接执行），必须指向构建产物 dist/index.html。
  */
 export const buildPreviewUrl = (appId?: string | number, codeGenType?: string): string => {
   if (appId == null || appId === '') {
     return ''
   }
-  return `${APP_PREVIEW_DOMAIN}/${codeGenType || CODE_GEN_TYPE.HTML}_${appId}/`
+  const type = codeGenType || CODE_GEN_TYPE.HTML
+  const entry = type === CODE_GEN_TYPE.VUE_PROJECT ? '/dist/index.html' : '/'
+  return `${APP_PREVIEW_DOMAIN}/${type}_${appId}${entry}`
 }
