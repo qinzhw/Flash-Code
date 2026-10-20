@@ -30,7 +30,7 @@
           <a-input v-model:value="formState.cover" placeholder="请输入封面图片地址" />
           <a-image
             v-if="formState.cover"
-            :src="formState.cover"
+            :src="buildCoverUrl(formState.cover)"
             :width="160"
             style="margin-top: 8px"
           />
@@ -68,6 +68,7 @@ import {
   updateAppByAdmin,
 } from '@/api/appController.ts'
 import { asApiId } from '@/utils/id.ts'
+import { buildCoverUrl } from '@/utils/appUrl.ts'
 
 const route = useRoute()
 const router = useRouter()

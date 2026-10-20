@@ -25,3 +25,25 @@ export const buildPreviewUrl = (appId?: string | number, codeGenType?: string): 
   const entry = type === CODE_GEN_TYPE.VUE_PROJECT ? '/dist/index.html' : '/'
   return `${APP_PREVIEW_DOMAIN}/${type}_${appId}${entry}`
 }
+
+/**
+ * 应用封面地址
+ *
+ * 后端截图上传对象存储后返回的是「域名 + 路径」，例如
+ * flashcode-xxx.cos.ap-guangzhou.myqcloud.com/screenshots/2026/10/20/xxx_compressed.jpg，
+ * 并没有协议前缀。直接交给 <img> 会被当成相对路径解析到前端域名下（必然 404），
+ * 所以这里统一补全 https；已经带协议、协议相对、data: 或以 / 开头的站内路径则原样返回。
+ */
+export const buildCoverUrl = (cover?: string): string => {
+  const value = (cover ?? '').trim()
+  if (!value) {
+    return ''
+  }
+  if (/^(https?:)?\/\//i.test(value)) {
+    return value.startsWith('//') ? `https:${value}` : value
+  }
+  if (/^data:/i.test(value) || value.startsWith('/')) {
+    return value
+  }
+  return `https://${value}`
+}

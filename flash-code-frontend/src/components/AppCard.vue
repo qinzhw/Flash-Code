@@ -1,7 +1,7 @@
 <template>
   <div class="app-card" @click="handleClick">
     <div class="app-card-cover">
-      <img v-if="app.cover" :src="app.cover" :alt="app.appName" class="app-card-cover-img" />
+      <img v-if="coverUrl" :src="coverUrl" :alt="app.appName" class="app-card-cover-img" />
       <div v-else class="app-card-cover-placeholder">{{ coverText }}</div>
       <a-tag v-if="isGood" class="app-card-badge" color="gold">精选</a-tag>
 
@@ -35,7 +35,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { buildDeployUrl } from '@/utils/appUrl.ts'
+import { buildCoverUrl, buildDeployUrl } from '@/utils/appUrl.ts'
 import { isGoodApp } from '@/constants/app.ts'
 
 interface Props {
@@ -54,6 +54,9 @@ const emit = defineEmits<{
 
 // 封面缺省时使用应用名首字占位
 const coverText = computed(() => (props.app.appName || 'AI').slice(0, 1))
+
+// 封面地址（后端返回的是对象存储域名，需要补全协议）
+const coverUrl = computed(() => buildCoverUrl(props.app.cover))
 
 // 是否精选应用
 const isGood = computed(() => isGoodApp(props.app.priority))

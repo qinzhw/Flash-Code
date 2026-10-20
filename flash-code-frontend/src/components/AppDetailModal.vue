@@ -8,7 +8,7 @@
   >
     <template v-if="app">
       <div v-if="!simple" class="detail-cover">
-        <img v-if="app.cover" :src="app.cover" :alt="app.appName" />
+        <img v-if="coverUrl" :src="coverUrl" :alt="app.appName" />
         <div v-else class="detail-cover-placeholder">{{ (app.appName || 'AI').slice(0, 1) }}</div>
       </div>
 
@@ -88,7 +88,7 @@ import { computed } from 'vue'
 import { DeleteOutlined, EditOutlined, LinkOutlined } from '@ant-design/icons-vue'
 import { getCodeGenTypeLabel } from '@/constants/codeGenType.ts'
 import { formatDateTime } from '@/utils/time.ts'
-import { buildDeployUrl } from '@/utils/appUrl.ts'
+import { buildCoverUrl, buildDeployUrl } from '@/utils/appUrl.ts'
 import { isGoodApp } from '@/constants/app.ts'
 import { useLoginUserStore } from '@/stores/loginUser.ts'
 
@@ -127,6 +127,9 @@ const canManage = computed(() => {
 
 // 已部署应用的访问地址：{部署域名}/{deployKey}/
 const deployedUrl = computed(() => buildDeployUrl(props.app?.deployKey))
+
+// 封面地址（后端返回的是对象存储域名，需要补全协议）
+const coverUrl = computed(() => buildCoverUrl(props.app?.cover))
 </script>
 
 <style scoped>

@@ -36,7 +36,7 @@
     >
       <template #bodyCell="{ column, record }">
         <template v-if="column.dataIndex === 'cover'">
-          <a-image v-if="record.cover" :src="record.cover" :width="120" />
+          <a-image v-if="record.cover" :src="buildCoverUrl(record.cover)" :width="120" />
           <span v-else> </span>
         </template>
         <template v-else-if="column.dataIndex === 'initPrompt'">
@@ -89,6 +89,7 @@ import AppDetailModal from '@/components/AppDetailModal.vue'
 import { deleteAppByAdmin, listAppVoByPageByAdmin, updateAppByAdmin } from '@/api/appController.ts'
 import { formatDateTime } from '@/utils/time.ts'
 import { asApiId } from '@/utils/id.ts'
+import { buildCoverUrl } from '@/utils/appUrl.ts'
 import { confirmDelete } from '@/utils/confirm.ts'
 import { usePagedTable } from '@/composables/usePagedTable.ts'
 import { CODE_GEN_TYPE_OPTIONS } from '@/constants/codeGenType.ts'
