@@ -32,6 +32,19 @@
           </template>
           应用详情
         </a-button>
+        <a-button
+          type="primary"
+          ghost
+          :loading="downloading"
+          :disabled="!isOwner"
+          @click="downloadCode"
+        >
+          <template #icon>
+            <DownloadOutlined />
+          </template>
+          下载代码
+        </a-button>
+
         <a-button v-if="isOwner" type="primary" :loading="deploying" @click="doDeploy">
           <template #icon>
             <cloud-upload-outlined />
@@ -116,6 +129,7 @@ import { message } from 'ant-design-vue'
 import {
   ArrowLeftOutlined,
   CloudUploadOutlined,
+  DownloadOutlined,
   EditOutlined,
   InfoCircleOutlined,
   LinkOutlined,
@@ -125,7 +139,7 @@ import AppPreviewPanel from '@/components/AppPreviewPanel.vue'
 import ChatMessageList from '@/components/ChatMessageList.vue'
 import DeployResultModal from '@/components/DeployResultModal.vue'
 import { useLoginUserStore } from '@/stores/loginUser.ts'
-import { deleteApp, deployApp, getAppVoById } from '@/api/appController.ts'
+import { deleteApp, deployApp, downloadAppCode, getAppVoById } from '@/api/appController.ts'
 import { API_BASE_URL } from '@/config'
 import { fetchSSE } from '@/utils/sse.ts'
 import { asApiId } from '@/utils/id.ts'
@@ -173,6 +187,9 @@ const detailVisible = ref(false)
 
 // 部署成功弹窗
 const deployResultVisible = ref(false)
+
+// 下载代码
+const downloading = ref(false)
 
 // 部署
 const deploying = ref(false)
@@ -325,6 +342,81 @@ const doSend = async () => {
 // 停止生成
 const doStop = () => {
   controller?.abort()
+}
+
+/**
+ * 从响应头的 Content-Disposition 中解析下载文件名
+ *
+ * 后端返回格式：attachment; filename="123.zip"，
+ * 同时兼容 RFC 5987 的 filename*=UTF-8''xxx 写法（中文文件名）
+ */
+const parseFileName = (disposition?: string): string => {
+  if (!disposition) {
+    return ''
+  }
+  const encodedFileName = /filename\*=UTF-8''([^;]+)/i.exec(disposition)?.[1]
+  if (encodedFileName) {
+    try {
+      return decodeURIComponent(encodedFileName.trim().replace(/^"|"$/g, ''))
+    } catch {
+      // 解码失败时继续按普通 filename 解析
+    }
+  }
+  return /filename="?([^";]+)"?/i.exec(disposition)?.[1]?.trim() ?? ''
+}
+
+/** 把 Blob 保存为本地文件（触发浏览器下载） */
+const saveFile = (blob: Blob, fileName: string) => {
+  const url = window.URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  // 延迟释放，避免部分浏览器还没开始下载链接就失效
+  setTimeout(() => window.URL.revokeObjectURL(url), 1000)
+}
+
+/** 读取后端业务异常返回的 JSON 内容（接口出错时返回的不是 ZIP） */
+const readErrorMessage = async (blob: Blob): Promise<string> => {
+  try {
+    const errorRes = JSON.parse(await blob.text()) as API.BaseResponseString
+    return errorRes?.message || ''
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * 下载应用代码
+ *
+ * 后端直接写出 ZIP 文件流，文件名放在 Content-Disposition 响应头里，
+ * 因此必须按 blob 接收响应，才能拿到文件内容和文件名
+ */
+const downloadCode = async () => {
+  if (!appId || !isOwner.value) {
+    return
+  }
+  downloading.value = true
+  try {
+    const res = await downloadAppCode({ appId: asApiId(appId) }, { responseType: 'blob' })
+    const blob = res.data as Blob
+    // 应用代码不存在、无权限等异常场景，后端返回的是 JSON 而不是 ZIP
+    if (blob.type.includes('json')) {
+      const errorMessage = await readErrorMessage(blob)
+      message.error('下载失败，' + (errorMessage || '请稍后重试'))
+      return
+    }
+    const fileName =
+      parseFileName(res.headers['content-disposition'] as string | undefined) || `${appId}.zip`
+    saveFile(blob, fileName)
+    message.success('代码下载成功')
+  } catch {
+    message.error('下载失败，请稍后重试')
+  } finally {
+    downloading.value = false
+  }
 }
 
 // 部署应用
