@@ -1,5 +1,6 @@
 package com.example.flashcode.service;
 
+import com.example.flashcode.model.dto.app.AppAddRequest;
 import com.example.flashcode.model.dto.app.AppQueryRequest;
 import com.example.flashcode.model.entity.User;
 import com.example.flashcode.model.vo.AppVO;
@@ -25,6 +26,15 @@ public interface AppService extends IService<App> {
      * @return 代码流
      */
     Flux<String> chatToGenCode(Long appId, String Message, User user);
+
+    /**
+     * 创建app应用
+     *
+     * @param appAddRequest 应用创建参数
+     * @param loginUser 登录用户实体
+     * @return 应用ID
+     */
+    Long createApp(AppAddRequest appAddRequest, User loginUser);
 
     /**
      * 应用部署

@@ -1,5 +1,6 @@
 package com.example.flashcode.config;
 
+import dev.langchain4j.http.client.jdk.JdkHttpClient;
 import dev.langchain4j.model.chat.StreamingChatModel;
 import dev.langchain4j.model.openai.OpenAiStreamingChatModel;
 import lombok.Data;
@@ -32,6 +33,8 @@ public class ReasoningStreamingChatModelConfig {
                 .baseUrl(baseUrl)
                 .modelName(modelName)
                 .maxTokens(maxTokens)
+                // 显式指定 JDK HttpClient，避免走到按 classpath 自动探测的 Spring RestClient
+                .httpClientBuilder(JdkHttpClient.builder())
                 .logRequests(true)
                 .logResponses(true)
                 .build();
